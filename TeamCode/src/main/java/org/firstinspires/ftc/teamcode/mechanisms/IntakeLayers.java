@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class IntakeLayers {
-    private DcMotor outer, inner;
+    private CRServo outer, inner;
     private NormalizedColorSensor leftOuterColorSensor;
     private NormalizedColorSensor rightOuterColorSensor;
 
@@ -20,15 +20,11 @@ public class IntakeLayers {
     }
 
     public void init(HardwareMap hardwareMap) {
-        outer = hardwareMap.get(DcMotor.class, "outer_intake_motor");
-        outer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        outer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // outer.setDirection(DcMotor.Direction.REVERSE);
+        outer = hardwareMap.get(CRServo.class, "outer_intake_motor");
+//        outer.setDirection(CRServo.Direction.REVERSE);
 
-        inner = hardwareMap.get(DcMotor.class, "inner_intake_motor");
-        inner.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        inner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // inner.setDirection(DcMotor.Direction.REVERSE);
+        inner = hardwareMap.get(CRServo.class, "inner_intake_motor");
+//        inner.setDirection(CRServo.Direction.REVERSE);
 
         leftOuterColorSensor = hardwareMap.get(NormalizedColorSensor.class, "left_outer_color_sensor");
         leftOuterColorSensor.setGain(8);
