@@ -57,7 +57,7 @@ public class TeleOpMode extends OpMode {
             garden = !garden;
         }
 
-        else if (gamepad1.left_bumper) {
+        else if (gamepad1.right_bumper) {
             intakeLayers.stop();
         }
 
