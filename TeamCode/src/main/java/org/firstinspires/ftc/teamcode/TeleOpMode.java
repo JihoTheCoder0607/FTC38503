@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.mechanisms.FlowerExtraction;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers;
+import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers.DetectedColor;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 
 @TeleOp
@@ -15,6 +16,9 @@ public class TeleOpMode extends OpMode {
 
     // Intake
     IntakeLayers intakeLayers = new IntakeLayers();
+    DetectedColor enemyColor = DetectedColor.RED;
+//    DetectedColor enemyColor = DetectedColor.BLUE;
+
     boolean garden = false;
     boolean lastYState = false;
 
@@ -40,25 +44,31 @@ public class TeleOpMode extends OpMode {
     @Override
     public void loop() {
         // Drivetrain
-        forward = gamepad1.left_stick_y;
+        forward = -gamepad1.left_stick_y;
         strafe = gamepad1.left_stick_x;
         rotate = gamepad1.right_stick_x;
 
         drive.drive(forward, strafe, rotate);
 
         // Intake
-        if (gamepad1.y && !lastYState) {
+        DetectedColor colorL = intakeLayers.getDetectedColor(telemetry, 'L');
+        DetectedColor colorR = intakeLayers.getDetectedColor(telemetry, 'R');
+
+        if (gamepad1.right_bumper) {
+            intakeLayers.stop();
+            garden = false;
+        }
+        else if (gamepad1.y && !lastYState) {
             if (garden) {
                 intakeLayers.intake();
-            }
-            else {
+            } else {
                 intakeLayers.garden();
             }
             garden = !garden;
         }
-
-        else if (gamepad1.right_bumper) {
-            intakeLayers.stop();
+        else if (colorL == enemyColor || colorR == enemyColor) {
+            intakeLayers.garden();
+            garden = true;
         }
 
         lastYState = gamepad1.y;
