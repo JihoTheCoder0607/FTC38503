@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -70,25 +72,36 @@ public class IntakeLayers {
 
         float alpha = (colors.alpha < 1e-9f) ? 1.0f : colors.alpha;
 
-        float normRed, normGreen, normBlue;
-        normRed = colors.red / alpha;
-        normGreen = colors.green / alpha;
-        normBlue = colors.blue / alpha;
+        int r, g, b;
+        r = (int) (colors.red * 255.0f);
+        g = (int) (colors.green * 255.0f);
+        b = (int) (colors.blue * 255.0f);
+
+        float[] hsv = new float[3];
+        Color.RGBToHSV(r, g, b, hsv);
+
+        float hue = hsv[0];
+        float saturation = hsv[1];
+        float value = hsv[2];
 
         // telemetry part only for calibration; comment-out in real game
-        telemetry.addData(side+" red", normRed);
-        telemetry.addData(side+" green", normGreen);
-        telemetry.addData(side+" blue", normBlue);
+        telemetry.addData(side+" hue", hue);
+        telemetry.addData(side+" saturation", saturation);
+        telemetry.addData(side+" value", value);
 
         // need to adjust these values
-        if (normRed > 0.35 && normGreen < 0.3 && normBlue < 0.3) {
-            return DetectedColor.RED;
+        if (colors.alpha < 0.05 || value < 0.1) {
+            return DetectedColor.UNKNOWN;
         }
-        else if (normRed > 0.5 && normGreen > 0.9 && normBlue < 0.6) {
+
+        if (hue >= 40 && hue <= 85) {
             return DetectedColor.YELLOW;
         }
-        else if (normRed < 0.2 && normGreen < 0.5 && normBlue > 0.5) {
+        else if (hue >= 190 && hue <= 250) {
             return DetectedColor.BLUE;
+        }
+        else if (hue <= 25 || hue >= 330) {
+            return DetectedColor.RED;
         }
 
         return DetectedColor.UNKNOWN;
