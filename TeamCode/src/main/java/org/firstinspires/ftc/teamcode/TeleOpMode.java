@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.mechanisms.FlowerExtraction;
+import org.firstinspires.ftc.teamcode.mechanisms.FlowerHood;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers.DetectedColor;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
@@ -25,20 +26,27 @@ public class TeleOpMode extends OpMode {
     // Flower Extraction
     FlowerExtraction flowerExtraction = new FlowerExtraction();
 
-    boolean down = false;
+    boolean extractorDown = false;
     boolean lastXState = false;
+
+    // Flower Hood
+    FlowerHood flowerHood = new FlowerHood();
+    boolean hoodDown = true;
+    boolean lastLBState = false;
 
     @Override
     public void init() {
         drive.init(hardwareMap);
         intakeLayers.init(hardwareMap);
         flowerExtraction.init(hardwareMap);
+        flowerHood.init(hardwareMap);
     }
 
     @Override
     public void start() {
         intakeLayers.intake();
         flowerExtraction.up();
+        flowerHood.down();
     }
 
     @Override
@@ -57,16 +65,14 @@ public class TeleOpMode extends OpMode {
         if (gamepad1.right_bumper) {
             intakeLayers.stop();
             garden = false;
-        }
-        else if (gamepad1.y && !lastYState) {
+        } else if (gamepad1.y && !lastYState) {
             if (garden) {
                 intakeLayers.intake();
             } else {
                 intakeLayers.garden();
             }
             garden = !garden;
-        }
-        else if (colorL == enemyColor || colorR == enemyColor) {
+        } else if (colorL == enemyColor || colorR == enemyColor) {
             intakeLayers.garden();
             garden = true;
         }
@@ -75,15 +81,24 @@ public class TeleOpMode extends OpMode {
 
         // Flower extraction
         if (gamepad1.x && !lastXState) {
-            if (down) {
+            if (extractorDown) {
                 flowerExtraction.up();
-            }
-            else {
+            } else {
                 flowerExtraction.down();
             }
-            down = !down;
+            extractorDown = !extractorDown;
         }
-
         lastXState = gamepad1.x;
+
+        // Flower hood
+        if (gamepad1.left_bumper && !lastLBState) {
+            if (hoodDown) {
+                flowerHood.up();
+            } else {
+                flowerHood.down();
+            }
+            hoodDown = !hoodDown;
+        }
+        lastLBState = gamepad1.left_bumper;
     }
 }
