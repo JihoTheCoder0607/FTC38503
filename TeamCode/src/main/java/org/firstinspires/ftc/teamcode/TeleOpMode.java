@@ -20,7 +20,7 @@ public class TeleOpMode extends OpMode {
     DetectedColor enemyColor = DetectedColor.RED;
 //    DetectedColor enemyColor = DetectedColor.BLUE;
 
-    boolean garden = false;
+    boolean manualGarden = false;
     boolean lastYState = false;
 
     // Flower Extraction
@@ -62,22 +62,30 @@ public class TeleOpMode extends OpMode {
         DetectedColor colorL = intakeLayers.getDetectedColor(telemetry, 'L');
         DetectedColor colorR = intakeLayers.getDetectedColor(telemetry, 'R');
 
+        boolean enemyDetected =
+                colorL == enemyColor || colorR == enemyColor;
+
+        if (gamepad1.y && !lastYState) {
+            manualGarden = !manualGarden;
+        }
+        lastYState = gamepad1.y;
+
         if (gamepad1.right_bumper) {
             intakeLayers.stop();
-            garden = false;
-        } else if (gamepad1.y && !lastYState) {
-            if (garden) {
-                intakeLayers.intake();
-            } else {
-                intakeLayers.garden();
-            }
-            garden = !garden;
-        } else if (colorL == enemyColor || colorR == enemyColor) {
-            intakeLayers.garden();
-            garden = true;
         }
 
-        lastYState = gamepad1.y;
+        else if (enemyDetected) {
+            intakeLayers.garden();
+        }
+
+        else if (manualGarden) {
+            intakeLayers.garden();
+        }
+
+        else {
+            intakeLayers.intake();
+        }
+
 
         // Flower extraction
         if (gamepad1.x && !lastXState) {
