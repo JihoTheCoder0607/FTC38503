@@ -8,14 +8,18 @@ import org.firstinspires.ftc.teamcode.mechanisms.FlowerHood;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers.DetectedColor;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
+import org.firstinspires.ftc.teamcode.mechanisms.Turret;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.List;
 
 @TeleOp
 public class TeleOpMode extends OpMode {
-    // Drivetrain
+    // ---------- Drivetrain ----------
     MecanumDrive drive = new MecanumDrive();
     double forward, strafe, rotate;
 
-    // Intake
+    // ---------- Intake ----------
     IntakeLayers intakeLayers = new IntakeLayers();
     DetectedColor enemyColor = DetectedColor.RED;
 //    DetectedColor enemyColor = DetectedColor.BLUE;
@@ -23,16 +27,19 @@ public class TeleOpMode extends OpMode {
     boolean manualGarden = false;
     boolean lastYState = false;
 
-    // Flower Extraction
+    // ---------- Flower Extraction ----------
     FlowerExtraction flowerExtraction = new FlowerExtraction();
 
     boolean extractorDown = false;
     boolean lastXState = false;
 
-    // Flower Hood
+    // ---------- Flower Hood ----------
     FlowerHood flowerHood = new FlowerHood();
     boolean hoodDown = true;
     boolean lastLBState = false;
+
+    // ---------- Turret ----------
+    Turret turret = new Turret();
 
     @Override
     public void init() {
@@ -40,6 +47,7 @@ public class TeleOpMode extends OpMode {
         intakeLayers.init(hardwareMap);
         flowerExtraction.init(hardwareMap);
         flowerHood.init(hardwareMap);
+        turret.init(hardwareMap, telemetry);
     }
 
     @Override
@@ -51,14 +59,14 @@ public class TeleOpMode extends OpMode {
 
     @Override
     public void loop() {
-        // Drivetrain
+        // ---------- Drivetrain ----------
         forward = -gamepad1.left_stick_y;
         strafe = gamepad1.left_stick_x;
         rotate = gamepad1.right_stick_x;
 
         drive.drive(forward, strafe, rotate);
 
-        // Intake
+        // ---------- Intake ----------
         DetectedColor colorL = intakeLayers.getDetectedColor(telemetry, 'L');
         DetectedColor colorR = intakeLayers.getDetectedColor(telemetry, 'R');
 
@@ -87,7 +95,7 @@ public class TeleOpMode extends OpMode {
         }
 
 
-        // Flower extraction
+        // ---------- Flower extraction ----------
         if (gamepad1.x && !lastXState) {
             if (extractorDown) {
                 flowerExtraction.up();
@@ -98,7 +106,7 @@ public class TeleOpMode extends OpMode {
         }
         lastXState = gamepad1.x;
 
-        // Flower hood
+        // ---------- Flower hood ----------
         if (gamepad1.left_bumper && !lastLBState) {
             if (hoodDown) {
                 flowerHood.up();
@@ -108,5 +116,10 @@ public class TeleOpMode extends OpMode {
             hoodDown = !hoodDown;
         }
         lastLBState = gamepad1.left_bumper;
+
+        // ---------- Turret ----------
+        // update vision portal
+        turret.update();
+        List<AprilTagDetection> detections = turret.getTagByColor(enemyColor);
     }
 }
