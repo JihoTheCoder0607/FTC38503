@@ -44,12 +44,10 @@ public class Turret {
     private final ElapsedTime timer = new ElapsedTime();
 
     // ---------- Intake & Shooting Mechanism
-    private NormalizedColorSensor leftInnerColorSensor;
-    private NormalizedColorSensor rightInnerColorSensor;
-    private DcMotor leftShooter;
-    private DcMotor rightShooter;
+    private NormalizedColorSensor colorSensor;
+    private DcMotor shooter;
 
-    public void init(HardwareMap hwMap, Telemetry telemetry) {
+    public void init(HardwareMap hwMap, Telemetry telemetry, char side) {
         this.telemetry = telemetry;
 
         // ---------- AprilTag ----------
@@ -73,17 +71,21 @@ public class Turret {
         timer.reset();
 
         // ---------- Intake & Shooting ----------
-        leftInnerColorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
-        rightInnerColorSensor = hwMap.get(NormalizedColorSensor.class, "right_inner_color_sensor");
+        if (side == 'L') {
+            shooter = hwMap.get(DcMotor.class, "left_shooter");
+            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            shooter.setDirection(DcMotor.Direction.REVERSE);
 
-        leftShooter = hwMap.get(DcMotor.class, "left_shooter");
-        leftShooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftShooter.setDirection(DcMotor.Direction.REVERSE);
+            colorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
+        }
+        else if (side == 'R') {
+            shooter = hwMap.get(DcMotor.class, "right_shooter");
+            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rightShooter = hwMap.get(DcMotor.class, "right_shooter");
-        rightShooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            colorSensor = hwMap.get(NormalizedColorSensor.class, "right_inner_color_sensor");
+        }
     }
 
     public void updateTagProcessor() {
@@ -181,22 +183,11 @@ public class Turret {
 
     // ---------- Intake & Shooting ----------
     public IntakeLayers.DetectedColor getDetectedColor(Telemetry telemetry, char side) {
-        NormalizedColorSensor sensor;
-        if (side == 'L') {
-            sensor = leftInnerColorSensor;
-        }
-        else if (side == 'R') {
-            sensor = rightInnerColorSensor;
-        }
-        else {
-            sensor = null;
-        }
-
-        if (sensor == null) {
+        if (colorSensor == null) {
             return IntakeLayers.DetectedColor.UNKNOWN;
         }
 
-        NormalizedRGBA colors = sensor.getNormalizedColors();
+        NormalizedRGBA colors = colorSensor.getNormalizedColors();
 
         int r, g, b;
         r = (int) (colors.red * 255.0f);
@@ -233,22 +224,7 @@ public class Turret {
         return IntakeLayers.DetectedColor.UNKNOWN;
     }
 
-    public void shoot(IntakeLayers.DetectedColor color, char side) {
-        DcMotor shooter;
-        if (side == 'L') {
-            shooter = leftShooter;
-        }
-        else if (side == 'R') {
-            shooter = rightShooter;
-        }
-        else {
-            shooter = null;
-        }
-
-        if (shooter == null) {
-            return;
-        }
-
+    public void shoot(IntakeLayers.DetectedColor color) {
         if (color == IntakeLayers.DetectedColor.UNKNOWN) {
             shooter.setPower(0.8); // values need testing
         }
@@ -258,5 +234,9 @@ public class Turret {
         else {
             shooter.setPower(1.0); // values need testing
         }
+    }
+
+    public void manualMode() {
+        turnServo.setPosition(0.5);
     }
 }
