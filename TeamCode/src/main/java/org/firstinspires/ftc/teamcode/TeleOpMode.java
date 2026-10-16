@@ -74,11 +74,11 @@ public class TeleOpMode extends OpMode {
         drive.drive(forward, strafe, rotate);
 
         // ---------- Intake ----------
-        DetectedColor colorL = intakeLayers.getDetectedColor(telemetry, 'L');
-        DetectedColor colorR = intakeLayers.getDetectedColor(telemetry, 'R');
+        DetectedColor outerColorL = intakeLayers.getDetectedColor(telemetry, 'L');
+        DetectedColor outerColorR = intakeLayers.getDetectedColor(telemetry, 'R');
 
         boolean enemyDetected =
-                colorL == enemyColor || colorR == enemyColor;
+                outerColorL == enemyColor || outerColorR == enemyColor;
 
         if (gamepad1.y && !lastYState) {
             manualGarden = !manualGarden;
@@ -163,5 +163,11 @@ public class TeleOpMode extends OpMode {
         else {
             telemetry.addLine("No Tag Detected. Stopping Turret Motor");
         }
+
+        DetectedColor innerColorL = turret.getDetectedColor(telemetry, 'L');
+        DetectedColor innerColorR = turret.getDetectedColor(telemetry, 'R');
+
+        turret.shoot(innerColorL, 'L');
+        turret.shoot(innerColorR, 'R');
     }
 }
