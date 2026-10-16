@@ -41,6 +41,10 @@ public class TeleOpMode extends OpMode {
     // ---------- Turret ----------
     Turret turret = new Turret();
 
+    // auto-updating P and D
+    double[] stepSizes = {0.1, 0.01, 0.001, 0.0001, 0.00001};
+    int stepIndex = 2;
+
     @Override
     public void init() {
         drive.init(hardwareMap);
@@ -48,6 +52,8 @@ public class TeleOpMode extends OpMode {
         flowerExtraction.init(hardwareMap);
         flowerHood.init(hardwareMap);
         turret.init(hardwareMap, telemetry);
+
+        telemetry.addLine("Initialized all mechanisms");
     }
 
     @Override
@@ -55,6 +61,7 @@ public class TeleOpMode extends OpMode {
         intakeLayers.intake();
         flowerExtraction.up();
         flowerHood.down();
+        turret.resetTimer();
     }
 
     @Override
@@ -118,8 +125,43 @@ public class TeleOpMode extends OpMode {
         lastLBState = gamepad1.left_bumper;
 
         // ---------- Turret ----------
-        // update vision portal
-        turret.update();
+        turret.updateTagProcessor();
         List<AprilTagDetection> detections = turret.getTagByColor(enemyColor);
+
+        turret.updateTurret(detections);
+
+        // update P and D on the fly
+        // left trigger cycles through different step sizes for tuning precision
+        if (gamepad1.leftTriggerWasPressed()) {
+            stepIndex = (stepIndex + 1) % stepSizes.length;
+        }
+
+        // d-pad left / right adjusts the P gain
+        if (gamepad1.dpadLeftWasPressed()) {
+            turret.setkP(turret.getkP() - stepSizes[stepIndex]);
+        }
+        if (gamepad1.dpadRightWasPressed()) {
+            turret.setkP(turret.getkP() + stepSizes[stepIndex]);
+        }
+
+        // d-pad up / down adjusts the D gain
+        if (gamepad1.dpadUpWasPressed()) {
+            turret.setkD(turret.getkD() + stepSizes[stepIndex]);
+        }
+        if (gamepad1.dpadUpWasPressed()) {
+            turret.setkD(turret.getkD() - stepSizes[stepIndex]);
+        }
+
+        telemetry.addData("Tuning P (dpad LR)", turret.getkP());
+        telemetry.addData("Tuning D (dpad UD)", turret.getkD());
+        telemetry.addData("Step Size (left trigger)", stepSizes[stepIndex]);
+
+
+        if (detections != null && !detections.isEmpty()) {
+            telemetry.addLine("AprilTag Detected");
+        }
+        else {
+            telemetry.addLine("No Tag Detected. Stopping Turret Motor");
+        }
     }
 }
