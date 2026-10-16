@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.util.Size;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -38,6 +43,12 @@ public class Turret {
     private final double MAX_SERVO_STEP = 0.05; // Limits maximum adjustment speed per frame
     private final ElapsedTime timer = new ElapsedTime();
 
+    // ---------- Intake & Shooting Mechanism
+    private NormalizedColorSensor leftInnerColorSensor;
+    private NormalizedColorSensor rightInnerColorSensor;
+    private DcMotor leftShooter;
+    private DcMotor rightShooter;
+
     public void init(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
@@ -60,6 +71,19 @@ public class Turret {
         turnServo = hwMap.get(Servo.class, "turret_servo");
         turnServo.setPosition(currentServoPosition);
         timer.reset();
+
+        // ---------- Intake & Shooting ----------
+        leftInnerColorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
+        rightInnerColorSensor = hwMap.get(NormalizedColorSensor.class, "right_inner_color_sensor");
+
+        leftShooter = hwMap.get(DcMotor.class, "left_shooter");
+        leftShooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftShooter.setDirection(DcMotor.Direction.REVERSE);
+
+        rightShooter = hwMap.get(DcMotor.class, "right_shooter");
+        rightShooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void updateTagProcessor() {
@@ -153,5 +177,86 @@ public class Turret {
         }
 
         lastError = error;
+    }
+
+    // ---------- Intake & Shooting ----------
+    public IntakeLayers.DetectedColor getDetectedColor(Telemetry telemetry, char side) {
+        NormalizedColorSensor sensor;
+        if (side == 'L') {
+            sensor = leftInnerColorSensor;
+        }
+        else if (side == 'R') {
+            sensor = rightInnerColorSensor;
+        }
+        else {
+            sensor = null;
+        }
+
+        if (sensor == null) {
+            return IntakeLayers.DetectedColor.UNKNOWN;
+        }
+
+        NormalizedRGBA colors = sensor.getNormalizedColors();
+
+        int r, g, b;
+        r = (int) (colors.red * 255.0f);
+        g = (int) (colors.green * 255.0f);
+        b = (int) (colors.blue * 255.0f);
+
+        float[] hsv = new float[3];
+        Color.RGBToHSV(r, g, b, hsv);
+
+        float hue = hsv[0];
+        float saturation = hsv[1];
+        float value = hsv[2];
+
+        // telemetry part only for calibration; comment-out in real game
+        telemetry.addData(side+" hue (inner)", hue);
+        telemetry.addData(side+" saturation (inner)", saturation);
+        telemetry.addData(side+" value (inner)", value);
+
+        // need to adjust these values
+        if (colors.alpha < 0.05 || value < 0.1) {
+            return IntakeLayers.DetectedColor.UNKNOWN;
+        }
+
+        if (hue >= 40 && hue <= 85) {
+            return IntakeLayers.DetectedColor.YELLOW;
+        }
+        else if (hue >= 190 && hue <= 250) {
+            return IntakeLayers.DetectedColor.BLUE;
+        }
+        else if (hue <= 25 || hue >= 330) {
+            return IntakeLayers.DetectedColor.RED;
+        }
+
+        return IntakeLayers.DetectedColor.UNKNOWN;
+    }
+
+    public void shoot(IntakeLayers.DetectedColor color, char side) {
+        DcMotor shooter;
+        if (side == 'L') {
+            shooter = leftShooter;
+        }
+        else if (side == 'R') {
+            shooter = rightShooter;
+        }
+        else {
+            shooter = null;
+        }
+
+        if (shooter == null) {
+            return;
+        }
+
+        if (color == IntakeLayers.DetectedColor.UNKNOWN) {
+            shooter.setPower(0.8); // values need testing
+        }
+        else if (color == IntakeLayers.DetectedColor.YELLOW) {
+            shooter.setPower(0.7); // values need testing
+        }
+        else {
+            shooter.setPower(1.0); // values need testing
+        }
     }
 }
