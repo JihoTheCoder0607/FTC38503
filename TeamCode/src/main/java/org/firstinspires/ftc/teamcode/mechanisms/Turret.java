@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.Size;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -206,21 +207,28 @@ public class Turret {
         telemetry.addData(side+" saturation (inner)", saturation);
         telemetry.addData(side+" value (inner)", value);
 
-        // need to adjust these values
-        if (colors.alpha < 0.05 || value < 0.1) {
-            return IntakeLayers.DetectedColor.UNKNOWN;
-        }
+        if (colorSensor instanceof DistanceSensor) {
+            double distanceCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
 
-        if (hue >= 40 && hue <= 85) {
-            return IntakeLayers.DetectedColor.YELLOW;
-        }
-        else if (hue >= 190 && hue <= 250) {
-            return IntakeLayers.DetectedColor.BLUE;
-        }
-        else if (hue <= 25 || hue >= 330) {
-            return IntakeLayers.DetectedColor.RED;
-        }
+            telemetry.addData("Distance (cm)", distanceCm);
 
+            if (distanceCm > 3.0) {
+                return IntakeLayers.DetectedColor.UNKNOWN;
+            }
+            // need to adjust these values
+            if (colors.alpha < 0.05 || value < 0.1) {
+                return IntakeLayers.DetectedColor.UNKNOWN;
+            }
+            if (hue >= 40 && hue <= 85) {
+                return IntakeLayers.DetectedColor.YELLOW;
+            }
+            else if (hue <= 25 || hue >= 330) {
+                return IntakeLayers.DetectedColor.RED;
+            }
+            else if (hue >= 190 && hue <= 250) {
+                return IntakeLayers.DetectedColor.BLUE;
+            }
+        }
         return IntakeLayers.DetectedColor.UNKNOWN;
     }
 
