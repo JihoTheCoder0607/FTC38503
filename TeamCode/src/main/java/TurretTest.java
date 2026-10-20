@@ -45,7 +45,7 @@ public class TurretTest extends OpMode {
         telemetry.addData(side + " Tuning D", turret.getkD());
         telemetry.addData(side + " Step Size", stepSizes[stepIndex]);
 
-        if (detections != null && !detections.isEmpty()) {
+        if (!detections.isEmpty()) {
             telemetry.addLine(side + " Turret: AprilTag Detected");
         } else {
             telemetry.addLine(side + " Turret: No Tag Detected. Stopping Motor");
@@ -73,7 +73,7 @@ public class TurretTest extends OpMode {
         lastDpadRightState = gamepad1.dpad_right;
 
         if (gamepad1.dpad_up && !lastDpadUpState) {
-            turret.setkD(turret.getkD() + stepSizes[stepIndex]);
+            turret.setkD(turret.getkD() + stepSizes[stepIndex] );
         }
         lastDpadUpState = gamepad1.dpad_up;
 
@@ -81,19 +81,21 @@ public class TurretTest extends OpMode {
             turret.setkD(turret.getkD() - stepSizes[stepIndex]);
         }
         lastDpadDownState = gamepad1.dpad_down;
+        autoShoot(turret, 'L');
 
         // ---------- Turret Execution ----------
-        if (gamepad1.b && !lastBState) {
-            manualShoot = !manualShoot;
-        }
-        lastBState = gamepad1.b;
-
-        if (!manualShoot) {
-            autoShoot(turret, 'L');
-            turret.shoot(turret.getDetectedColor(telemetry, 'L'));
-        } else {
-            turret.manualMode();
-            turret.shoot(turret.getDetectedColor(telemetry, 'L'));
-        }
+//        if (gamepad1.b && !lastBState) {
+//            manualShoot = !manualShoot;
+//        }
+//        lastBState = gamepad1.b;
+//
+//        if (!manualShoot) {
+//            autoShoot(turret, 'L');
+//            turret.shoot(turret.getDetectedColor(telemetry, 'L'));
+//        } else {
+//            turret.manualMode();
+//            turret.shoot(turret.getDetectedColor(telemetry, 'L'));
+//        }
+        telemetry.update();
     }
 }

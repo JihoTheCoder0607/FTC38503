@@ -1,15 +1,12 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 import android.util.Size;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -32,16 +29,13 @@ public class Turret {
     private List<AprilTagDetection> detectedTags = new ArrayList<>();
 
     // ---------- Alignment ----------
-    private Servo turnServo;
+    private CRServo turnServo;
     private double kP = 0.001;
     private double kD = 0.0000;
     private double goalX = 0;
     private double lastError = 0;
-    private double angleTolerance = 0.5;
+    private double angleTolerance = 1.5;
 
-    // The servo position baseline variable
-    private double currentServoPosition = 0.5;
-    private final double MAX_SERVO_STEP = 0.05; // Limits maximum adjustment speed per frame
     private final ElapsedTime timer = new ElapsedTime();
 
     // ---------- Intake & Shooting Mechanism
@@ -67,26 +61,27 @@ public class Turret {
         visionPortal = builder.build();
 
         // ---------- Alignment ----------
-        turnServo = hwMap.get(Servo.class, "turret_servo");
-        turnServo.setPosition(currentServoPosition);
+
+        turnServo = hwMap.get(CRServo.class, "turret_servo");
+        turnServo.setPower(0.0);
         timer.reset();
 
         // ---------- Intake & Shooting ----------
-        if (side == 'L') {
-            shooter = hwMap.get(DcMotor.class, "left_shooter");
-            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            shooter.setDirection(DcMotor.Direction.REVERSE);
-
-            colorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
-        }
-        else if (side == 'R') {
-            shooter = hwMap.get(DcMotor.class, "right_shooter");
-            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            colorSensor = hwMap.get(NormalizedColorSensor.class, "right_inner_color_sensor");
-        }
+//        if (side == 'L') {
+//            shooter = hwMap.get(DcMotor.class, "left_shooter");
+//            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//            shooter.setDirection(DcMotor.Direction.REVERSE);
+//
+//            colorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
+//        }
+//        else if (side == 'R') {
+//            shooter = hwMap.get(DcMotor.class, "right_shooter");
+//            shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//
+//            colorSensor = hwMap.get(NormalizedColorSensor.class, "right_inner_color_sensor");
+//        }
     }
 
     public void updateTagProcessor() {
@@ -154,97 +149,113 @@ public class Turret {
         double deltaTime = timer.seconds();
         timer.reset();
 
-        if (detections == null || detections.isEmpty()) {
+        if (detections.isEmpty()) {
+            turnServo.setPower(0.0);
             lastError = 0;
             return;
         }
 
-        AprilTagDetection primaryTag = detections.get(0);
-        if (primaryTag.ftcPose == null) return;
+        double bearingAvg = 0;
+        int length = detections.size();
+        for (AprilTagDetection primaryTag : detections) {
+            if (primaryTag.ftcPose == null) {
+                length--;
+                continue;
+            }
+            bearingAvg += primaryTag.ftcPose.bearing;
+        }
+        if (length <= 0) {
+            turnServo.setPower(0.0);
+            lastError = 0;
+            return;
+        }
+        bearingAvg /= length;
 
-        double error = goalX - primaryTag.ftcPose.bearing;
+        double error = (bearingAvg - goalX);
+
+        if (Math.abs(error) < angleTolerance) {
+            turnServo.setPower(0.0);
+            lastError = error;
+            return;
+        }
+
         double pTerm = error * kP;
         double dTerm = 0;
 
-        if (deltaTime > 0) {
+        if (deltaTime > 0.001) {
             dTerm = ((error - lastError) / deltaTime) * kD;
         }
 
-        if (Math.abs(error) > angleTolerance) {
-            double servoDelta = pTerm + dTerm;
-
-            servoDelta = Range.clip(servoDelta, -MAX_SERVO_STEP, MAX_SERVO_STEP);
-
-            currentServoPosition = Range.clip(currentServoPosition + servoDelta, 0.0, 1.0);
-            turnServo.setPosition(currentServoPosition);
-        }
+        double power = pTerm + dTerm;
+        power = Range.clip(power, -1.0, 1.0);
+        turnServo.setPower(power);
 
         lastError = error;
     }
 
     // ---------- Intake & Shooting ----------
-    public IntakeLayers.DetectedColor getDetectedColor(Telemetry telemetry, char side) {
-        if (colorSensor == null) {
-            return IntakeLayers.DetectedColor.UNKNOWN;
-        }
-
-        NormalizedRGBA colors = colorSensor.getNormalizedColors();
-
-        int r, g, b;
-        r = (int) (colors.red * 255.0f);
-        g = (int) (colors.green * 255.0f);
-        b = (int) (colors.blue * 255.0f);
-
-        float[] hsv = new float[3];
-        Color.RGBToHSV(r, g, b, hsv);
-
-        float hue = hsv[0];
-        float saturation = hsv[1];
-        float value = hsv[2];
-
-        // telemetry part only for calibration; comment-out in real game
-        telemetry.addData(side+" hue (inner)", hue);
-        telemetry.addData(side+" saturation (inner)", saturation);
-        telemetry.addData(side+" value (inner)", value);
-
-        if (colorSensor instanceof DistanceSensor) {
-            double distanceCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
-
-            telemetry.addData("Distance (cm)", distanceCm);
-
-            if (distanceCm > 3.0) {
-                return IntakeLayers.DetectedColor.UNKNOWN;
-            }
-            // need to adjust these values
-            if (colors.alpha < 0.05 || value < 0.1) {
-                return IntakeLayers.DetectedColor.UNKNOWN;
-            }
-            if (hue >= 40 && hue <= 85) {
-                return IntakeLayers.DetectedColor.YELLOW;
-            }
-            else if (hue <= 25 || hue >= 330) {
-                return IntakeLayers.DetectedColor.RED;
-            }
-            else if (hue >= 190 && hue <= 250) {
-                return IntakeLayers.DetectedColor.BLUE;
-            }
-        }
-        return IntakeLayers.DetectedColor.UNKNOWN;
-    }
-
-    public void shoot(IntakeLayers.DetectedColor color) {
-        if (color == IntakeLayers.DetectedColor.UNKNOWN) {
-            shooter.setPower(0.8); // values need testing
-        }
-        else if (color == IntakeLayers.DetectedColor.YELLOW) {
-            shooter.setPower(0.7); // values need testing
-        }
-        else {
-            shooter.setPower(1.0); // values need testing
-        }
-    }
-
-    public void manualMode() {
-        turnServo.setPosition(0.5);
-    }
+//    public IntakeLayers.DetectedColor getDetectedColor(Telemetry telemetry, char side) {
+//        if (colorSensor == null) {
+//            return IntakeLayers.DetectedColor.UNKNOWN;
+//        }
+//
+//        NormalizedRGBA colors = colorSensor.getNormalizedColors();
+//
+//        int r, g, b;
+//        r = (int) (colors.red * 255.0f);
+//        g = (int) (colors.green * 255.0f);
+//        b = (int) (colors.blue * 255.0f);
+//
+//        float[] hsv = new float[3];
+//        Color.RGBToHSV(r, g, b, hsv);
+//
+//        float hue = hsv[0];
+//        float saturation = hsv[1];
+//        float value = hsv[2];
+//
+//        // telemetry part only for calibration; comment-out in real game
+//        telemetry.addData(side+" hue (inner)", hue);
+//        telemetry.addData(side+" saturation (inner)", saturation);
+//        telemetry.addData(side+" value (inner)", value);
+//
+//        if (colorSensor instanceof DistanceSensor) {
+//            double distanceCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
+//
+//            telemetry.addData("Distance (cm)", distanceCm);
+//
+//            if (distanceCm > 3.0) {
+//                return IntakeLayers.DetectedColor.UNKNOWN;
+//            }
+//            // need to adjust these values
+//            if (colors.alpha < 0.05 || value < 0.1) {
+//                return IntakeLayers.DetectedColor.UNKNOWN;
+//            }
+//            if (hue >= 40 && hue <= 85) {
+//                return IntakeLayers.DetectedColor.YELLOW;
+//            }
+//            else if (hue <= 25 || hue >= 330) {
+//                return IntakeLayers.DetectedColor.RED;
+//            }
+//            else if (hue >= 190 && hue <= 250) {
+//                return IntakeLayers.DetectedColor.BLUE;
+//            }
+//        }
+//        return IntakeLayers.DetectedColor.UNKNOWN;
+//    }
+//
+//    public void shoot(IntakeLayers.DetectedColor color) {
+//        if (color == IntakeLayers.DetectedColor.UNKNOWN) {
+//            shooter.setPower(0.8); // values need testing
+//        }
+//        else if (color == IntakeLayers.DetectedColor.YELLOW) {
+//            shooter.setPower(0.7); // values need testing
+//        }
+//        else {
+//            shooter.setPower(1.0); // values need testing
+//        }
+//    }
+//
+//    public void manualMode() {
+//        turnServo.setPosition(0.5);
+//    }
 }

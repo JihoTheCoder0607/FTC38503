@@ -171,16 +171,16 @@ public class TeleOpMode extends OpMode {
         }
         lastBState = gamepad1.b;
 
-        if (!manualShoot) {
-            autoShoot(turretL, 'L');
-            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
-            autoShoot(turretR, 'R');
-            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
-        } else {
-            turretL.manualMode();
-            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
-            turretR.manualMode();
-            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
-        }
+//        if (!manualShoot) {
+//            autoShoot(turretL, 'L');
+//            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
+//            autoShoot(turretR, 'R');
+//            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
+//        } else {
+//            turretL.manualMode();
+//            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
+//            turretR.manualMode();
+//            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
+//        }
     }
 }
