@@ -87,9 +87,9 @@ public class IntakeLayers {
         float value = hsv[2];
 
         // telemetry part only for calibration; comment-out in real game
-        telemetry.addData(side+" hue", hue);
-        telemetry.addData(side+" saturation", saturation);
-        telemetry.addData(side+" value", value);
+        telemetry.addData(side+" hue (outer)", hue);
+        telemetry.addData(side+" saturation (outer)", saturation);
+        telemetry.addData(side+" value (outer)", value);
 
         // need to adjust these values
         if (colors.alpha < 0.05 || value < 0.1) {

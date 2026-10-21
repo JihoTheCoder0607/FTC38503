@@ -26,4 +26,5 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    // FTC SDK already bundles OpenCV (opencv-repackaged-bundled-dylibs) — no need for org.openpnp:opencv
 }
