@@ -34,8 +34,7 @@ public class TeleOpMode extends OpMode {
     boolean lastLBState = false;
 
     // ---------- Turret ----------
-    Turret turretL = new Turret();
-    Turret turretR = new Turret();
+    Turret turret = new Turret();
 
     // Tuning P and D
     double[] stepSizes = {0.1, 0.01, 0.001, 0.0001, 0.00001};
@@ -56,8 +55,7 @@ public class TeleOpMode extends OpMode {
         intakeLayers.init(hardwareMap);
         flowerExtraction.init(hardwareMap);
         flowerHood.init(hardwareMap);
-        turretL.init(hardwareMap, telemetry, 'L');
-        turretR.init(hardwareMap, telemetry, 'R');
+        turret.init(hardwareMap, telemetry);
         telemetry.addLine("Initialized all mechanisms");
     }
 
@@ -66,22 +64,21 @@ public class TeleOpMode extends OpMode {
         intakeLayers.intake();
         flowerExtraction.up();
         flowerHood.down();
-        turretL.resetTimer();
-        turretR.resetTimer();
+        turret.resetTimer();
     }
 
-    public void autoShoot(Turret turret, char side) {
+    public void autoShoot(Turret turret) {
         turret.updateTagProcessor();
         List<AprilTagDetection> detections = turret.getTagByColor(enemyColor);
         turret.updateTurret(detections);
-        telemetry.addData(side + " Tuning P", turret.getkP());
-        telemetry.addData(side + " Tuning D", turret.getkD());
-        telemetry.addData(side + " Step Size", stepSizes[stepIndex]);
+        telemetry.addData("Tuning P", turret.getkP());
+        telemetry.addData("Tuning D", turret.getkD());
+        telemetry.addData("Step Size", stepSizes[stepIndex]);
 
-        if (detections != null && !detections.isEmpty()) {
-            telemetry.addLine(side + " Turret: AprilTag Detected");
+        if (!detections.isEmpty()) {
+            telemetry.addLine("Turret: AprilTag Detected");
         } else {
-            telemetry.addLine(side + " Turret: No Tag Detected. Stopping Motor");
+            telemetry.addLine("Turret: No Tag Detected. Stopping Motor");
         }
     }
 
@@ -142,26 +139,22 @@ public class TeleOpMode extends OpMode {
         lastLeftTriggerState = currentLeftTriggerState;
 
         if (gamepad1.dpad_left && !lastDpadLeftState) {
-            turretL.setkP(turretL.getkP() - stepSizes[stepIndex]);
-            turretR.setkP(turretR.getkP() - stepSizes[stepIndex]);
+            turret.setkP(turret.getkP() - stepSizes[stepIndex]);
         }
         lastDpadLeftState = gamepad1.dpad_left;
 
         if (gamepad1.dpad_right && !lastDpadRightState) {
-            turretL.setkP(turretL.getkP() + stepSizes[stepIndex]);
-            turretR.setkP(turretR.getkP() + stepSizes[stepIndex]);
+            turret.setkP(turret.getkP() + stepSizes[stepIndex]);
         }
         lastDpadRightState = gamepad1.dpad_right;
 
         if (gamepad1.dpad_up && !lastDpadUpState) {
-            turretL.setkD(turretL.getkD() + stepSizes[stepIndex]);
-            turretR.setkD(turretR.getkD() + stepSizes[stepIndex]);
+            turret.setkD(turret.getkD() + stepSizes[stepIndex]);
         }
         lastDpadUpState = gamepad1.dpad_up;
 
         if (gamepad1.dpad_down && !lastDpadDownState) {
-            turretL.setkD(turretL.getkD() - stepSizes[stepIndex]);
-            turretR.setkD(turretR.getkD() - stepSizes[stepIndex]);
+            turret.setkD(turret.getkD() - stepSizes[stepIndex]);
         }
         lastDpadDownState = gamepad1.dpad_down;
 
@@ -171,16 +164,12 @@ public class TeleOpMode extends OpMode {
         }
         lastBState = gamepad1.b;
 
-//        if (!manualShoot) {
-//            autoShoot(turretL, 'L');
-//            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
-//            autoShoot(turretR, 'R');
-//            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
-//        } else {
-//            turretL.manualMode();
-//            turretL.shoot(turretL.getDetectedColor(telemetry, 'L'));
-//            turretR.manualMode();
-//            turretR.shoot(turretR.getDetectedColor(telemetry, 'R'));
-//        }
+        if (!manualShoot) {
+            autoShoot(turret);
+            turret.shoot(turret.getDetectedColor(telemetry));
+        } else {
+            turret.manualMode();
+            turret.shoot(turret.getDetectedColor(telemetry));
+        }
     }
 }
