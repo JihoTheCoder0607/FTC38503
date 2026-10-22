@@ -30,11 +30,11 @@ public class Turret {
 
     // ---------- Alignment ----------
     private CRServo turnServo;
-    private double kP = 0.001;
-    private double kD = 0.0000;
+    private double kP = 0.013;
+    private double kD = 0.0004;
     private double goalX = 0;
     private double lastError = 0;
-    private double angleTolerance = 1.5;
+    private double angleTolerance = 0.5;
 
     private final ElapsedTime timer = new ElapsedTime();
 
@@ -155,23 +155,24 @@ public class Turret {
             return;
         }
 
-        double bearingAvg = 0;
-        int length = detections.size();
-        for (AprilTagDetection primaryTag : detections) {
-            if (primaryTag.ftcPose == null) {
-                length--;
-                continue;
-            }
-            bearingAvg += primaryTag.ftcPose.bearing;
-        }
-        if (length <= 0) {
-            turnServo.setPower(0.0);
-            lastError = 0;
-            return;
-        }
-        bearingAvg /= length;
+//        double bearingAvg = 0;
+//        int length = detections.size();
+//        for (AprilTagDetection primaryTag : detections) {
+//            if (primaryTag.ftcPose == null) {
+//                length--;
+//                continue;
+//            }
+//            bearingAvg += primaryTag.ftcPose.bearing;
+//        }
+//        if (length <= 0) {
+//            turnServo.setPower(0.0);
+//            lastError = 0;
+//            return;
+//        }
+//        bearingAvg /= length;
+        double bearingAvg = detections.get(0).ftcPose.bearing;
 
-        double error = (bearingAvg - goalX);
+        double error = (goalX-bearingAvg);
 
         if (Math.abs(error) < angleTolerance) {
             turnServo.setPower(0.0);
