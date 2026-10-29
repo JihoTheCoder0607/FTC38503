@@ -20,6 +20,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Turret {
@@ -42,6 +43,8 @@ public class Turret {
 
     // ---------- Intake & Shooting Mechanism
     private NormalizedColorSensor colorSensor;
+
+    private final float[] hsv = new float[3];
     private DcMotor shooter;
 
     public void init(HardwareMap hwMap, Telemetry telemetry) {
@@ -81,7 +84,7 @@ public class Turret {
 
     public void updateTagProcessor() {
         List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
-        detectedTags = (detections != null) ? detections : new ArrayList<>();
+        detectedTags = (detections != null) ? detections : Collections.emptyList();
     }
 
     @SuppressLint("DefaultLocale")
@@ -144,7 +147,7 @@ public class Turret {
         double deltaTime = timer.seconds();
         timer.reset();
 
-        if (detections.isEmpty()) {
+        if (detections == null || detections.isEmpty()) {
             turnMotor.setPower(0.0);
             lastError = 0;
             return;
@@ -186,7 +189,6 @@ public class Turret {
         g = (int) (colors.green * 255.0f);
         b = (int) (colors.blue * 255.0f);
 
-        float[] hsv = new float[3];
         Color.RGBToHSV(r, g, b, hsv);
 
         float hue = hsv[0];
