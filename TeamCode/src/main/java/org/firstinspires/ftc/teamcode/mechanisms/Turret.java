@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.util.Size;
 
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -32,7 +31,7 @@ public class Turret {
     private List<AprilTagDetection> detectedTags = new ArrayList<>();
 
     // ---------- Alignment ----------
-    private CRServo turnServo;
+    private DcMotor turnMotor;
     private double kP = 0.013;
     private double kD = 0.0004;
     private double goalX = 0;
@@ -65,17 +64,19 @@ public class Turret {
 
         // ---------- Alignment ----------
 
-        turnServo = hwMap.get(CRServo.class, "turret_servo");
-        turnServo.setPower(0.0);
+        turnMotor = hwMap.get(DcMotor.class, "turn_motor");
+        turnMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turnMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turnMotor.setPower(0.0);
         timer.reset();
 
         // ---------- Intake & Shooting ----------
-        shooter = hwMap.get(DcMotor.class, "shooter");
-        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooter.setDirection(DcMotor.Direction.REVERSE);
-
-        colorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
+//        shooter = hwMap.get(DcMotor.class, "shooter");
+//        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        shooter.setDirection(DcMotor.Direction.REVERSE);
+//
+//        colorSensor = hwMap.get(NormalizedColorSensor.class, "left_inner_color_sensor");
     }
 
     public void updateTagProcessor() {
@@ -144,7 +145,7 @@ public class Turret {
         timer.reset();
 
         if (detections.isEmpty()) {
-            turnServo.setPower(0.0);
+            turnMotor.setPower(0.0);
             lastError = 0;
             return;
         }
@@ -153,7 +154,7 @@ public class Turret {
         double error = (goalX-bearingAvg);
 
         if (Math.abs(error) < angleTolerance) {
-            turnServo.setPower(0.0);
+            turnMotor.setPower(0.0);
             lastError = error;
             return;
         }
@@ -167,7 +168,7 @@ public class Turret {
 
         double power = pTerm + dTerm;
         power = Range.clip(power, -1.0, 1.0);
-        turnServo.setPower(power);
+        turnMotor.setPower(power);
 
         lastError = error;
     }
@@ -235,6 +236,14 @@ public class Turret {
     }
 
     public void manualMode() {
-        turnServo.setPower(0.0);
+        if (turnMotor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+            turnMotor.setTargetPosition(0);
+            turnMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            turnMotor.setPower(0.4);
+        }
+        if (turnMotor.getMode() == DcMotor.RunMode.RUN_TO_POSITION && !turnMotor.isBusy()) {
+            turnMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            turnMotor.setPower(0.0);
+        }
     }
 }

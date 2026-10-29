@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.mechanisms;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -10,7 +11,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class IntakeLayers {
-    private DcMotor outer, inner, feeder;
+    private DcMotor outer, feeder;
+    private CRServo inner;
     private NormalizedColorSensor leftOuterColorSensor;
     private NormalizedColorSensor rightOuterColorSensor;
 
@@ -27,10 +29,8 @@ public class IntakeLayers {
         outer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        outer.setDirection(DcMotor.Direction.REVERSE);
 
-        inner = hardwareMap.get(DcMotor.class, "inner_intake_motor");
-        inner.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        inner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        inner.setDirection(DcMotor.Direction.REVERSE);
+        inner = hardwareMap.get(CRServo.class, "inner_intake_servo");
+//        inner.setDirection(CRServo.Direction.REVERSE);
 
         feeder = hardwareMap.get(DcMotor.class, "feeder_motor");
         feeder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

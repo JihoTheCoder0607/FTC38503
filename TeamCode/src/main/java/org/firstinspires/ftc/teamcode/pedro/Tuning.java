@@ -1,37 +1,37 @@
-package org.firstinspires.ftc.teamcode.pedro;
-
-import com.pedropathing.revhub.drivetrains.Mecanum;
-import com.pedropathing.revhub.localizers.PinpointLocalizer;
-import com.pedropathing.tuning.autotune.Procedure;
-import com.pedropathing.tuning.autotune.Tuner;
-
-import org.firstinspires.ftc.teamcode.pedro.procedures.ForesightTuner;
-import org.firstinspires.ftc.teamcode.pedro.procedures.MecanumTuner;
-import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
-import org.firstinspires.ftc.teamcode.pedro.procedures.TwoWheelTuner;
-
-public class Tuning {
-    // ---------- Mecanum Drive ----------
-    @Tuner
-    public static Procedure mecanumTuner() {
-        return new MecanumTuner();
-    }
-
-    // ---------- Odometry Pod (Two Wheel)
-    @Tuner
-    public static Procedure twoWheelTuner() {
-        return new TwoWheelTuner();
-    }
-
-    // ---------- Follower ----------
-    @Tuner
-    public static Procedure foresightTuner() {
-        return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig), (hardwareMap) -> new Mecanum(hardwareMap, Constants.drivetrainConfig));
-    }
-
-    // ---------- Tests ----------
-    @Tuner
-    public static Procedure tests() {
-        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), (hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig)), () -> new Foresight(Constants.foresightConfig));
-    }
-}
+//package org.firstinspires.ftc.teamcode.pedro;
+//
+//import com.pedropathing.revhub.drivetrains.Mecanum;
+//import com.pedropathing.revhub.localizers.PinpointLocalizer;
+//import com.pedropathing.tuning.autotune.Procedure;
+//import com.pedropathing.tuning.autotune.Tuner;
+//
+//import org.firstinspires.ftc.teamcode.pedro.procedures.ForesightTuner;
+//import org.firstinspires.ftc.teamcode.pedro.procedures.MecanumTuner;
+//import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
+//import org.firstinspires.ftc.teamcode.pedro.procedures.TwoWheelTuner;
+//
+//public class Tuning {
+//    // ---------- Mecanum Drive ----------
+//    @Tuner
+//    public static Procedure mecanumTuner() {
+//        return new MecanumTuner();
+//    }
+//
+//    // ---------- Odometry Pod (Two Wheel)
+//    @Tuner
+//    public static Procedure twoWheelTuner() {
+//        return new TwoWheelTuner();
+//    }
+//
+//    // ---------- Follower ----------
+//    @Tuner
+//    public static Procedure foresightTuner() {
+//        return new ForesightTuner((hardwareMap) -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig), (hardwareMap) -> new Mecanum(hardwareMap, Constants.drivetrainConfig));
+//    }
+//
+//    // ---------- Tests ----------
+//    @Tuner
+//    public static Procedure tests() {
+//        return new Tests(hardwareMap -> new Mecanum(hardwareMap, Constants.drivetrainConfig), (hardwareMap -> new PinpointLocalizer(hardwareMap, Constants.localizerConfig)), () -> new Foresight(Constants.foresightConfig));
+//    }
+//}
