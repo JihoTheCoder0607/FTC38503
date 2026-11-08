@@ -21,6 +21,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Turret {
@@ -37,6 +38,8 @@ public class Turret {
     private DcMotor turnMotor;
     private double kP = 0.0039;
     private double kD = 0.0003;
+    private double filteredDerivative = 0;
+    private final double DERIVATIVE_TAU = 0.05;
     private double goalX = 0;
     private double lastError = 0;
     private double angleTolerance = 0.5;
@@ -161,12 +164,17 @@ public class Turret {
         double deltaTime = timer.seconds();
         timer.reset();
 
-        double bearingAvg = detections.get(0).ftcPose.bearing;
+        AprilTagDetection closestTag = Collections.min(
+                detections,
+                Comparator.comparingDouble(a -> a.ftcPose.range)
+        );
+        double bearingAvg = closestTag.ftcPose.bearing;
 
         double error = (goalX-bearingAvg);
 
         if (Math.abs(error) < angleTolerance) {
             turnMotor.setPower(0.0);
+            filteredDerivative = 0;
             lastError = error;
             return;
         }
@@ -175,7 +183,16 @@ public class Turret {
         double dTerm = 0;
 
         if (deltaTime > 0.001) {
-            dTerm = ((error - lastError) / deltaTime) * kD;
+
+            double rawDerivative = (error - lastError) / deltaTime;
+
+            double alpha = 1 - Math.exp(-deltaTime / DERIVATIVE_TAU);
+
+            filteredDerivative =
+                    alpha * rawDerivative +
+                            (1 - alpha) * filteredDerivative;
+
+            dTerm = filteredDerivative * kD;
         }
 
         double power = pTerm + dTerm;
