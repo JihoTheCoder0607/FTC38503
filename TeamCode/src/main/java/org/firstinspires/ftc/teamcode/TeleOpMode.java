@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.mechanisms.FlowerExtraction;
@@ -8,11 +10,15 @@ import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers;
 import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers.DetectedColor;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 import org.firstinspires.ftc.teamcode.mechanisms.Turret;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.util.List;
 
 @TeleOp
 public class TeleOpMode extends OpMode {
+    // ---------- Pedro Pathing Live Tracking ----------
+    private Follower follower;
+
     // ---------- Drivetrain ----------
     MecanumDrive drive = new MecanumDrive();
     double forward, strafe, rotate;
@@ -54,6 +60,10 @@ public class TeleOpMode extends OpMode {
 
     @Override
     public void init() {
+        follower = Constants.create(hardwareMap);
+        Pose startPose = new Pose(12, 12, Math.toRadians(0));
+        follower.setPose(startPose);
+
         drive.init(hardwareMap);
         intakeLayers.init(hardwareMap);
         flowerExtraction.init(hardwareMap);
@@ -70,7 +80,7 @@ public class TeleOpMode extends OpMode {
         turret.resetTimer();
     }
 
-    public void autoShoot(Turret turret) {
+    public void autoShoot() {
         turret.updateTagProcessor();
         List<AprilTagDetection> detections = turret.getTagByColor(enemyColor);
         turret.updateTurret(detections);
@@ -87,6 +97,9 @@ public class TeleOpMode extends OpMode {
 
     @Override
     public void loop() {
+        // Update Follower
+        follower.update();
+
         // ---------- Drivetrain ----------
         forward = -gamepad1.left_stick_y;
         strafe = gamepad1.left_stick_x;
@@ -172,11 +185,20 @@ public class TeleOpMode extends OpMode {
         lastBState = gamepad1.b;
 
         if (!manualShoot) {
-            autoShoot(turret);
+            autoShoot();
             turret.shoot(turret.getDetectedColor(telemetry));
         } else {
             turret.manualMode();
             turret.shoot(turret.getDetectedColor(telemetry));
         }
+
+        // Odometry
+        Pose currentPose = follower.pose();
+
+        telemetry.addData("-- Robot Position--", "");
+        telemetry.addData("X Position (Inches)", currentPose.x());
+        telemetry.addData("Y Position (Inches)", currentPose.y());
+        telemetry.addData("Heading (Degrees)", Math.toDegrees(currentPose.heading()));
+        telemetry.update();
     }
 }
