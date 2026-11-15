@@ -27,7 +27,7 @@ public class TeleOpMode extends OpMode {
     IntakeLayers intakeLayers = new IntakeLayers();
     DetectedColor enemyColor = DetectedColor.RED;
     boolean manualGarden = false;
-    boolean lastYState = false;
+    boolean lastLBState = false;
 
     boolean lastRightBumperState = false;
     boolean forceStop = false;
@@ -40,10 +40,12 @@ public class TeleOpMode extends OpMode {
     // ---------- Flower Hood ----------
     FlowerHood flowerHood = new FlowerHood();
     boolean hoodDown = true;
-    boolean lastLBState = false;
+    boolean lastYState = false;
 
     // ---------- shooter ----------
     Shooter shooter = new Shooter();
+    boolean shooting = false;
+    boolean lastAState = false;
 
     @Override
     public void init() {
@@ -82,10 +84,10 @@ public class TeleOpMode extends OpMode {
         DetectedColor outerColorR = intakeLayers.getDetectedColor(telemetry, 'R');
         boolean enemyDetected = outerColorL == enemyColor || outerColorR == enemyColor;
 
-        if (gamepad1.y && !lastYState) {
+        if (gamepad1.left_bumper && !lastLBState) {
             manualGarden = !manualGarden;
         }
-        lastYState = gamepad1.y;
+        lastLBState = gamepad1.left_bumper;
         if (gamepad1.right_bumper && !lastRightBumperState) {
             forceStop = !forceStop;
         }
@@ -111,7 +113,7 @@ public class TeleOpMode extends OpMode {
         lastXState = gamepad1.x;
 
         // ---------- Flower hood ----------
-        if (gamepad1.left_bumper && !lastLBState) {
+        if (gamepad1.y && !lastYState) {
             if (hoodDown) {
                 flowerHood.up();
             } else {
@@ -119,10 +121,16 @@ public class TeleOpMode extends OpMode {
             }
             hoodDown = !hoodDown;
         }
-        lastLBState = gamepad1.left_bumper;
+        lastYState = gamepad1.y;
 
         // ---------- Shooter ----------
-        shooter.shoot(shooter.getDetectedColor(telemetry));
+        if (gamepad1.a && !lastAState) {
+            shooting = !shooting;
+        }
+        lastAState = gamepad1.a;
+        if (shooting) {
+            shooter.shoot(shooter.getDetectedColor(telemetry));
+        }
 
         // Odometry
         Pose currentPose = follower.pose();
