@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class OneLayerIntake {
     private DcMotor outer;
+    private DcMotor inner;
 
 
     public void init(HardwareMap hardwareMap) {
@@ -19,6 +20,11 @@ public class OneLayerIntake {
         outer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         outer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        outer.setDirection(DcMotor.Direction.REVERSE);
+
+        inner = hardwareMap.get(DcMotor.class, "inner_intake_motor");
+        inner.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        inner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        inner.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void intake() {

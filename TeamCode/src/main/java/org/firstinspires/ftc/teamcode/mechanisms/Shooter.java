@@ -9,8 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -21,10 +20,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-public class Turret {
+public class Shooter {
     private Telemetry telemetry;
 
     // ---------- AprilTag ----------
@@ -33,18 +31,6 @@ public class Turret {
     private List<AprilTagDetection> detectedTags = new ArrayList<>();
 
     private final List<AprilTagDetection> allianceColorTags = new ArrayList<>();
-
-    // ---------- Alignment ----------
-    private DcMotor turnMotor;
-    private double kP = 0.0039;
-    private double kD = 0.0003;
-    private double filteredDerivative = 0;
-    private final double DERIVATIVE_TAU = 0.05;
-    private double goalX = 0;
-    private double lastError = 0;
-    private double angleTolerance = 0.5;
-
-    private final ElapsedTime timer = new ElapsedTime();
 
     // ---------- Intake & Shooting Mechanism + Backboard
     private NormalizedColorSensor colorSensor;
@@ -55,6 +41,8 @@ public class Turret {
     private Servo backboard;
     private final double NECTAR_BB_POSITION = 0.5;
     private final double POLLEN_BB_POSITION = 0.3;
+
+    private final double STOP_POSITION = 0.2;
 
     public void init(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
@@ -77,23 +65,15 @@ public class Turret {
         builder.addProcessor(aprilTagProcessor);
         visionPortal = builder.build();
 
-        // ---------- Alignment ----------
-
-        turnMotor = hwMap.get(DcMotor.class, "turn_motor");
-        turnMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        turnMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turnMotor.setPower(0.0);
-        timer.reset();
-
         // ---------- Intake & Shooting + Backboard ----------
-        shooter = hwMap.get(DcMotor.class, "shooter");
-        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        shooter = hwMap.get(DcMotor.class, "shooter");
+//        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 //        shooter.setDirection(DcMotor.Direction.REVERSE);
 
-        colorSensor = hwMap.get(NormalizedColorSensor.class, "turret_color_sensor");
-
-        backboard = hwMap.get(Servo.class, "backboard");
+//        colorSensor = hwMap.get(NormalizedColorSensor.class, "shooter_color_sensor");
+//
+//        backboard = hwMap.get(Servo.class, "backboard");
 //        backboard.setDirection(Servo.Direction.REVERSE);
     }
 
@@ -117,89 +97,6 @@ public class Turret {
             }
         }
         return allianceColorTags;
-    }
-
-    public void stop() {
-        if (visionPortal != null) {
-            visionPortal.close();
-        }
-    }
-
-    // ---------- Alignment ----------
-    public void setkP(double newKP) {
-        kP = newKP;
-    }
-    public double getkP() {
-        return kP;
-    }
-    public void setkD(double newKD) {
-        kD = newKD;
-    }
-    public double getkD() {
-        return kD;
-    }
-    public void resetTimer() {
-        timer.reset();
-    }
-
-    public void updateTurret(List<AprilTagDetection> detections) {
-        if (detections == null || detections.isEmpty()) {
-            if (Math.abs(lastError) > angleTolerance) {
-                double recoveryPower = Math.signum(lastError) * 0.05;
-
-                if (turnMotor.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
-                    turnMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                turnMotor.setPower(recoveryPower);
-            } else {
-                turnMotor.setPower(0.0);
-            }
-            return;
-        }
-
-        if (turnMotor.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
-            turnMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        double deltaTime = timer.seconds();
-        timer.reset();
-
-        AprilTagDetection closestTag = Collections.min(
-                detections,
-                Comparator.comparingDouble(a -> a.ftcPose.range)
-        );
-        double bearingAvg = closestTag.ftcPose.bearing;
-
-        double error = (goalX-bearingAvg);
-
-        if (Math.abs(error) < angleTolerance) {
-            turnMotor.setPower(0.0);
-            filteredDerivative = 0;
-            lastError = error;
-            return;
-        }
-
-        double pTerm = error * kP;
-        double dTerm = 0;
-
-        if (deltaTime > 0.001) {
-
-            double rawDerivative = (error - lastError) / deltaTime;
-
-            double alpha = 1 - Math.exp(-deltaTime / DERIVATIVE_TAU);
-
-            filteredDerivative =
-                    alpha * rawDerivative +
-                            (1 - alpha) * filteredDerivative;
-
-            dTerm = filteredDerivative * kD;
-        }
-
-        double power = pTerm + dTerm;
-        power = Range.clip(power, -1.0, 1.0);
-        turnMotor.setPower(power);
-
-        lastError = error;
     }
 
     // ---------- Intake & Shooting ----------
@@ -266,11 +163,11 @@ public class Turret {
         }
     }
 
-    public void manualMode() {
-        if (turnMotor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
-            turnMotor.setTargetPosition(0);
-            turnMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            turnMotor.setPower(0.4);
+    public void stop() {
+        if (visionPortal != null) {
+            visionPortal.close();
         }
+        backboard.setPosition(STOP_POSITION);
+        shooter.setPower(0.0);
     }
 }
