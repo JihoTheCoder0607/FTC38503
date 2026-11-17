@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.api.Paths;
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.follower.Follower;
 import static com.pedropathing.ivy.commands.Commands.*;
@@ -25,14 +26,35 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 @Autonomous
 public class AutoUpSideRed extends OpMode {
     private Follower follower;
+
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-    // Poses
-    private final Pose startPose = poseFactory.of(129.708, 82.54167, 180); // need to update every match
-    private final Pose pose1 = poseFactory.of(117.917, 117.917, 225);
-    private final Pose pose2 = poseFactory.of(94.333, 11.7917, 270);
-    private final Pose pose3 = poseFactory.of(82.54167, 11.7917, 90);
-    private final Pose parkPose = poseFactory.of(129.708, 35.375, 180);
+    private final Pose start = poseFactory.of(8.9615, 60.4569, 0);
+    private final Pose point1 = poseFactory.of(23.5833, 23.5833, 45);
+    private final Pose point1Control1 = poseFactory.of(24.2736, 55.035, 0);
+    private final Pose point2Start = poseFactory.of(23.5833, 23.5833, 45);
+    private final Pose point2 = poseFactory.of(46.5412, 129.6144, 90);
+    private final Pose point2Control1 = poseFactory.of(19.7692, 89.3473, 0);
+    private final Pose point3Start = poseFactory.of(46.5412, 129.6144, 90);
+    private final Pose point3 = poseFactory.of(57.1909, 119.1954, 270);
+    private final Pose point4Start = poseFactory.of(57.1909, 119.1954, 270);
+    private final Pose point4 = poseFactory.of(11.792, 106.125, 0);
+
+    public Path path1() {
+        return Paths.curve(start, point1Control1, point1).linear(start, point1);
+    }
+
+    public Path path2() {
+        return Paths.curve(point2Start, point2Control1, point2).linear(point2Start, point2);
+    }
+
+    public Path path3() {
+        return Paths.line(point3Start, point3).linear(point3Start, point3);
+    }
+
+    public Path path4() {
+        return Paths.line(point4Start, point4).linear(point4Start, point4);
+    }
 
     FlowerExtraction flowerExtraction = new FlowerExtraction();
 
@@ -40,41 +62,26 @@ public class AutoUpSideRed extends OpMode {
     // ---------- Shooter ----------
     Shooter shooter = new Shooter();
 
-    // Path methods
-    private Path phase1() {
-        return line(startPose, pose1).linear(startPose, pose1);
-    }
-    private Path phase2() {
-        return line(pose1, pose2).linear(pose1, pose2);
-    }
-    private Path phase3() {
-        return line(pose2, pose3).linear(pose2, pose3);
-    }
-
-    private Path park(){
-        return line(pose3, parkPose).linear(pose3, parkPose);
-    }
-
     private Command autoRoutine() {
         return sequential(
-                follow(follower, phase1()),
+                follow(follower, path1()),
                 // Add mechanism commands here.
                 race(
                         infinite(() -> shooter.shoot(shooter.getDetectedColor(telemetry))),
-                        waitMs(1500)
+                        waitMs(3000)
                 ),
                 instant(() -> shooter.stop()),
-                follow(follower, phase2()),
+                follow(follower, path2()),
                 instant(() -> flowerExtraction.down()),
-                waitMs(1500),
+                waitMs(3000),
                 instant(() -> flowerExtraction.up()),
-                follow(follower, phase3()),
+                follow(follower, path3()),
                 race(
                         infinite(() -> shooter.shoot(shooter.getDetectedColor(telemetry))),
-                        waitMs(1500)
+                        waitMs(3000)
                 ),
                 instant(() -> shooter.stop()),
-                follow(follower, park())
+                follow(follower, path4())
         );
     }
 
@@ -83,8 +90,12 @@ public class AutoUpSideRed extends OpMode {
         Scheduler.reset();
 
         follower = Constants.create(hardwareMap);
-        follower.setPose(startPose);
+        follower.setPose(start);
         follower.update();
+
+        flowerExtraction.init(hardwareMap);
+
+        shooter.init(hardwareMap, telemetry);
     }
 
     @Override
