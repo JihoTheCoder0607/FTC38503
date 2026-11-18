@@ -47,6 +47,9 @@ public class TeleOpMode extends OpMode {
     boolean shooting = false;
     boolean lastAState = false;
 
+    boolean manualMode = false;
+    boolean lastBState = false;
+
     @Override
     public void init() {
 //        follower = Constants.create(hardwareMap);

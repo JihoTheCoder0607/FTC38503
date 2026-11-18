@@ -29,19 +29,18 @@ public class AutoUpSideBlue extends OpMode {
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
     private final Pose start = poseFactory.of(132.5385, 81.0431, 180);
-    private final Pose point1 = poseFactory.of(117.9167, 117.9167, 225);
-    private final Pose point1Control1 = poseFactory.of(117.2264, 86.465, 180);
-    private final Pose point2Start = poseFactory.of(117.9167, 117.9167, 225);
+    private final Pose path1 = poseFactory.of(117.9167, 117.92, 225);
+    private final Pose point2Start = poseFactory.of(117.9167, 117.92, 225);
     private final Pose point2 = poseFactory.of(94.9588, 11.8856, 270);
-    private final Pose point2Control1 = poseFactory.of(121.7308, 52.1527, 180);
+    private final Pose point2Control1 = poseFactory.of(121.7308, 52.1527, 0);
     private final Pose point3Start = poseFactory.of(94.9588, 11.8856, 270);
-    private final Pose point3 = poseFactory.of(84.3091, 22.3046, 90);
+    private final Pose point3 = poseFactory.of(84.3091, 22.3046, -270);
+    private final Pose point3Control1 = poseFactory.of(108.2397, 44.6577, 0);
     private final Pose point4Start = poseFactory.of(84.3091, 22.3046, 90);
     private final Pose point4 = poseFactory.of(129.708, 35.375, 180);
 
-
     public Path path1() {
-        return Paths.curve(start, point1Control1, point1).linear(start, point1);
+        return Paths.line(start, path1).linear(start, path1);
     }
 
     public Path path2() {
@@ -49,7 +48,7 @@ public class AutoUpSideBlue extends OpMode {
     }
 
     public Path path3() {
-        return Paths.line(point3Start, point3).linear(point3Start, point3);
+        return Paths.curve(point3Start, point3Control1, point3).linear(point3Start, point3);
     }
 
     public Path path4() {

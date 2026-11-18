@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class IntakeLayers {
-    private DcMotor outer, inner;
-    private CRServo feeder;
+    private DcMotor intake;
+    private DcMotor conveyor;
     private NormalizedColorSensor leftOuterColorSensor;
     private NormalizedColorSensor rightOuterColorSensor;
 
@@ -24,45 +24,39 @@ public class IntakeLayers {
     }
 
     public void init(HardwareMap hardwareMap) {
-        outer = hardwareMap.get(DcMotor.class, "outer_intake_motor");
-        outer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        outer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        outer.setDirection(DcMotor.Direction.REVERSE);
+        intake = hardwareMap.get(DcMotor.class, "intake_motor");
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        intake.setDirection(DcMotor.Direction.REVERSE);
 
-        inner = hardwareMap.get(DcMotor.class, "inner_intake_motor");
-        inner.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        inner.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        outer.setDirection(DcMotor.Direction.REVERSE);
-
-        feeder = hardwareMap.get(CRServo.class, "feeder_motor");
-//        feeder.setDirection(CRServo.Direction.REVERSE);
+        conveyor = hardwareMap.get(DcMotor.class, "conveyor_motor");
+        conveyor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        conveyor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        conveyor.setDirection(DcMotor.Direction.REVERSE);
 
 
-        leftOuterColorSensor = hardwareMap.get(NormalizedColorSensor.class, "left_outer_color_sensor");
+        leftOuterColorSensor = hardwareMap.get(NormalizedColorSensor.class, "left_color_sensor");
         leftOuterColorSensor.setGain(8);
 
-        rightOuterColorSensor = hardwareMap.get(NormalizedColorSensor.class, "right_outer_color_sensor");
+        rightOuterColorSensor = hardwareMap.get(NormalizedColorSensor.class, "right_color_sensor");
         rightOuterColorSensor.setGain(8);
     }
 
     public void intake() {
         // these values can be changed
-        outer.setPower(1.0);
-        inner.setPower(1.0);
-        feeder.setPower(1.0);
+        intake.setPower(1.0);
+        conveyor.setPower(1.0);
     }
 
     public void stop() {
-        outer.setPower(0.0);
-        inner.setPower(1.0);
-        feeder.setPower(0.0);
+        intake.setPower(0.0);
+        conveyor.setPower(0.0);
     }
 
     public void garden() {
         // these values can be changed
-        outer.setPower(-1.0);
-        inner.setPower(-1.0);
-        feeder.setPower(-1.0);
+        intake.setPower(-1.0);
+        conveyor.setPower(-1.0);
     }
 
     public DetectedColor getDetectedColor(Telemetry telemetry, char side) {

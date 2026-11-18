@@ -37,6 +37,7 @@ public class AutoUpSideRed extends OpMode {
     private final Pose point2Control1 = poseFactory.of(19.7692, 89.3473, 0);
     private final Pose point3Start = poseFactory.of(46.5412, 129.6144, 90);
     private final Pose point3 = poseFactory.of(57.1909, 119.1954, 270);
+    private final Pose point3Control1 = poseFactory.of(89.8293, 120.3532, 0);
     private final Pose point4Start = poseFactory.of(57.1909, 119.1954, 270);
     private final Pose point4 = poseFactory.of(11.792, 106.125, 0);
 
@@ -49,7 +50,7 @@ public class AutoUpSideRed extends OpMode {
     }
 
     public Path path3() {
-        return Paths.line(point3Start, point3).linear(point3Start, point3);
+        return Paths.curve(point3Start, point3Control1, point3).linear(point3Start, point3);
     }
 
     public Path path4() {

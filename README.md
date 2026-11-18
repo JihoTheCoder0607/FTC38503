@@ -16,12 +16,10 @@ This is the code repository for Earl of March's FTC 38503 team for the **2026–
     * `TeleOpMode`
     * `AutoUpSideRed`
     * `AutoUpSideBlue`
-* **Upcoming**
     * `AutoDownSide1Blue`
     * `AutoDownSide1Red`
     * `AutoDownSide2Blue`
     * `AutoDownSide2Red`
-
 ---
 
 ## Strategy 🧠

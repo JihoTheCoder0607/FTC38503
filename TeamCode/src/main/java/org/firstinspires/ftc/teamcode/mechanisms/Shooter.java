@@ -66,15 +66,15 @@ public class Shooter {
         visionPortal = builder.build();
 
         // ---------- Intake & Shooting + Backboard ----------
-//        shooter = hwMap.get(DcMotor.class, "shooter");
-//        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        shooter.setDirection(DcMotor.Direction.REVERSE);
+        shooter = hwMap.get(DcMotor.class, "shooter");
+        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setDirection(DcMotor.Direction.REVERSE);
 
-//        colorSensor = hwMap.get(NormalizedColorSensor.class, "shooter_color_sensor");
-//
-//        backboard = hwMap.get(Servo.class, "backboard");
-//        backboard.setDirection(Servo.Direction.REVERSE);
+        colorSensor = hwMap.get(NormalizedColorSensor.class, "shooter_color_sensor");
+
+        backboard = hwMap.get(Servo.class, "backboard");
+        backboard.setDirection(Servo.Direction.REVERSE);
     }
 
     public void updateTagProcessor() {
