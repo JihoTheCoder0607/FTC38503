@@ -62,7 +62,6 @@ As a rookie team, we are focused on building a realistic robot that still perfor
 | **Left Joystick** | Translational Movement | Strafe and forward/backward drive |
 | **Right Joystick** | Rotation | Turn robot left/right |
 | **A** | Shoot | Active when in manual shooting mode |
-| **B** | Toggle Shooting Mode | Switches between manual and auto shooting |
 | **X** | Flower Extraction Mode | Toggles flower extraction mechanism |
 | **Y** | Toggle Hood | Moves flower shooting hood up/down |
 | **Left Bumper** | Reverse Intake | Changes intake motor direction |
