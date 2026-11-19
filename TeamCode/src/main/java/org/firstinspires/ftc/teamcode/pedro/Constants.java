@@ -8,6 +8,7 @@ import com.pedropathing.revhub.localizers.Encoder;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.revhub.localizers.RevHubIMU;
 import com.pedropathing.revhub.localizers.TwoWheelConfig;
+import com.pedropathing.revhub.localizers.TwoWheelLocalizer;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -42,7 +43,7 @@ public class Constants {
 
     public static Follower create(HardwareMap h) {
         return new Follower(
-                new PinpointLocalizer(h, localizerConfig),
+                new TwoWheelLocalizer(h, localizerConfig),
                 new Mecanum(h, drivetrainConfig),
                 new Foresight(foresightConfig)
         );
