@@ -67,11 +67,12 @@ public class Shooter {
 
         // ---------- Intake & Shooting + Backboard ----------
         shooter = hwMap.get(DcMotor.class, "shooter");
-        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooter.setDirection(DcMotor.Direction.REVERSE);
 
         colorSensor = hwMap.get(NormalizedColorSensor.class, "shooter_color_sensor");
+        colorSensor.setGain(8);
 
         backboard = hwMap.get(Servo.class, "backboard");
         backboard.setDirection(Servo.Direction.REVERSE);

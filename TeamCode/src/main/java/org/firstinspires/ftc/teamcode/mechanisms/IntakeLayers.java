@@ -16,6 +16,8 @@ public class IntakeLayers {
     private NormalizedColorSensor leftOuterColorSensor;
     private NormalizedColorSensor rightOuterColorSensor;
 
+    private final float[] hsv = new float[3];
+
     public enum DetectedColor {
         RED,
         BLUE,
@@ -82,7 +84,6 @@ public class IntakeLayers {
         g = (int) (colors.green * 255.0f);
         b = (int) (colors.blue * 255.0f);
 
-        float[] hsv = new float[3];
         Color.RGBToHSV(r, g, b, hsv);
 
         float hue = hsv[0];
