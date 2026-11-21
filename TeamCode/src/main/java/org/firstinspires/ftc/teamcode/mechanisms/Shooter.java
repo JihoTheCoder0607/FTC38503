@@ -209,4 +209,19 @@ public class Shooter {
         backboard.setPosition(STOP_POSITION);
         shooter.setPower(0.0);
     }
+
+    public void shootWithManualPower(IntakeLayers.DetectedColor color, double power) {
+        if (color == IntakeLayers.DetectedColor.YELLOW) {
+            backboard.setPosition(POLLEN_BB_POSITION);
+        } else {
+            backboard.setPosition(NECTAR_BB_POSITION);
+        }
+        shooter.setPower(Math.min(1.0, Math.max(0.0, power)));
+    }
+
+    public void close() {
+        if (visionPortal != null) {
+            visionPortal.close();
+        }
+    }
 }
