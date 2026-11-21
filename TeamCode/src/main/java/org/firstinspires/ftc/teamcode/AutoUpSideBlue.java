@@ -20,6 +20,7 @@ import static com.pedropathing.api.Paths.*;
 import com.pedropathing.paths.Path;
 
 import org.firstinspires.ftc.teamcode.mechanisms.FlowerExtraction;
+import org.firstinspires.ftc.teamcode.mechanisms.IntakeLayers;
 import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
@@ -66,7 +67,7 @@ public class AutoUpSideBlue extends OpMode {
                 follow(follower, path1()),
                 // Add mechanism commands here.
                 race(
-                        infinite(() -> shooter.shoot(shooter.getDetectedColor(telemetry))),
+                        infinite(() -> shooter.shoot(IntakeLayers.DetectedColor.RED, shooter.getDetectedColor(telemetry))),
                         waitMs(3000)
                 ),
                 instant(() -> shooter.stop()),
@@ -76,7 +77,7 @@ public class AutoUpSideBlue extends OpMode {
                 instant(() -> flowerExtraction.up()),
                 follow(follower, path3()),
                 race(
-                        infinite(() -> shooter.shoot(shooter.getDetectedColor(telemetry))),
+                        infinite(() -> shooter.shoot(IntakeLayers.DetectedColor.RED, shooter.getDetectedColor(telemetry))),
                         waitMs(3000)
                 ),
                 instant(() -> shooter.stop()),

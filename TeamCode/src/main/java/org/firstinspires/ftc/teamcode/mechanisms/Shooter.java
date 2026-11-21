@@ -149,25 +149,63 @@ public class Shooter {
         return IntakeLayers.DetectedColor.UNKNOWN;
     }
 
-    public void shoot(IntakeLayers.DetectedColor color) {
+    public double polyPollen(List<AprilTagDetection> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return 0;
+        }
+
+        // These values can be calculated by collecting data & polynomial regression
+        double a = 0;
+        double b = 0;
+        double c = 0;
+
+        double avgDistance = 0;
+        for (AprilTagDetection tag : tags) {
+            avgDistance += tag.ftcPose.range;
+        }
+        avgDistance /= tags.size();
+
+        double power = a * Math.pow(avgDistance, 2) + b * avgDistance + c;
+
+        return Math.min(1.0, Math.max(0, power));
+    }
+    public double polyNectar(List<AprilTagDetection> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return 0;
+        }
+
+        // These values can be calculated by collecting data & polynomial regression
+        double a = 0;
+        double b = 0;
+        double c = 0;
+
+        double avgDistance = 0;
+        for (AprilTagDetection tag : tags) {
+            avgDistance += tag.ftcPose.range;
+        }
+        avgDistance /= tags.size();
+
+        double power = a * Math.pow(avgDistance, 2) + b * avgDistance + c;
+
+        return Math.min(1.0, Math.max(0, power));
+    }
+    public void shoot(IntakeLayers.DetectedColor enemyColor, IntakeLayers.DetectedColor color) {
+        List<AprilTagDetection> tags = this.getTagByColor(enemyColor);
         if (color == IntakeLayers.DetectedColor.UNKNOWN) {
             backboard.setPosition(NECTAR_BB_POSITION);
-            shooter.setPower(0.8); // values need testing
+            shooter.setPower(polyNectar(tags)); // values need testing
         }
         else if (color == IntakeLayers.DetectedColor.YELLOW) {
             backboard.setPosition(POLLEN_BB_POSITION);
-            shooter.setPower(0.7); // values need testing
+            shooter.setPower(polyPollen(tags)); // values need testing
         }
         else {
             backboard.setPosition(NECTAR_BB_POSITION);
-            shooter.setPower(1.0); // values need testing
+            shooter.setPower(polyNectar(tags)); // values need testing
         }
     }
 
     public void stop() {
-        if (visionPortal != null) {
-            visionPortal.close();
-        }
         backboard.setPosition(STOP_POSITION);
         shooter.setPower(0.0);
     }
