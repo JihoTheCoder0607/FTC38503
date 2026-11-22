@@ -77,6 +77,10 @@ public class AutoDownSide2Red extends OpMode {
                 waitMs(3000),
                 instant(() -> flowerExtraction.up()),
                 follow(follower, path3()),
+                race(
+                        infinite(() -> shooter.shoot(IntakeLayers.DetectedColor.RED, shooter.getDetectedColor(telemetry))),
+                        waitMs(3000)
+                ),
                 follow(follower, path4())
         );
     }
