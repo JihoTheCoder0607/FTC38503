@@ -29,10 +29,6 @@ public class TeleOpMode extends OpMode {
     boolean extractorDown = false;
     boolean lastXState = false;
 
-    // ---------- Flower Hood ----------
-    FlowerHood flowerHood = new FlowerHood();
-    boolean hoodDown = true;
-    boolean lastYState = false;
 
     // ---------- shooter ----------
     Shooter shooter = new Shooter();
@@ -44,7 +40,6 @@ public class TeleOpMode extends OpMode {
         drive.init(hardwareMap);
         intakeLayers.init(hardwareMap);
         flowerExtraction.init(hardwareMap);
-        flowerHood.init(hardwareMap);
         shooter.init(hardwareMap, telemetry);
         telemetry.addLine("Initialized all mechanisms");
     }
@@ -53,7 +48,6 @@ public class TeleOpMode extends OpMode {
     public void start() {
         intakeLayers.intake();
         flowerExtraction.up();
-        flowerHood.down();
     }
 
     @Override
@@ -97,16 +91,6 @@ public class TeleOpMode extends OpMode {
         }
         lastXState = gamepad1.x;
 
-        // ---------- Flower hood ----------
-        if (gamepad1.y && !lastYState) {
-            if (hoodDown) {
-                flowerHood.up();
-            } else {
-                flowerHood.down();
-            }
-            hoodDown = !hoodDown;
-        }
-        lastYState = gamepad1.y;
 
         // ---------- Shooter ----------
         if (gamepad1.a && !lastAState) {
