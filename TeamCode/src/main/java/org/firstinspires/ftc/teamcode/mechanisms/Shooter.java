@@ -124,27 +124,18 @@ public class Shooter {
         telemetry.addData("saturation (inner)", saturation);
         telemetry.addData("value (inner)", value);
 
-        if (colorSensor instanceof DistanceSensor) {
-            double distanceCm = ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM);
+        double dy = Math.abs(90-hue);
+        double dr = Math.abs(20-hue);
+        double db = Math.abs(200-hue);
 
-            telemetry.addData("Distance (cm)", distanceCm);
-
-            if (distanceCm > 3.0) {
-                return IntakeLayers.DetectedColor.UNKNOWN;
-            }
-            // need to adjust these values
-            if (colors.alpha < 0.05 || value < 0.1) {
-                return IntakeLayers.DetectedColor.UNKNOWN;
-            }
-            if (hue >= 40 && hue <= 85) {
-                return IntakeLayers.DetectedColor.YELLOW;
-            }
-            else if (hue <= 25 || hue >= 330) {
-                return IntakeLayers.DetectedColor.RED;
-            }
-            else if (hue >= 190 && hue <= 250) {
-                return IntakeLayers.DetectedColor.BLUE;
-            }
+        if (dy == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.YELLOW;
+        }
+        else if (dr == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.RED;
+        }
+        else if (db == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.BLUE;
         }
         return IntakeLayers.DetectedColor.UNKNOWN;
     }

@@ -4,11 +4,13 @@ import android.graphics.Color;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class IntakeLayers {
     private DcMotor intake;
@@ -96,20 +98,19 @@ public class IntakeLayers {
         telemetry.addData(side+" value (outer)", value);
 
         // need to adjust these values
-        if (colors.alpha < 0.05 || value < 0.1) {
-            return DetectedColor.UNKNOWN;
-        }
+        double dy = Math.abs(90-hue);
+        double dr = Math.abs(20-hue);
+        double db = Math.abs(200-hue);
 
-        if (hue >= 40 && hue <= 85) {
-            return DetectedColor.YELLOW;
+        if (dy == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.YELLOW;
         }
-        else if (hue >= 190 && hue <= 250) {
-            return DetectedColor.BLUE;
+        else if (dr == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.RED;
         }
-        else if (hue <= 25 || hue >= 330) {
-            return DetectedColor.RED;
+        else if (db == Math.min(dy, Math.min(dr, db))) {
+            return IntakeLayers.DetectedColor.BLUE;
         }
-
-        return DetectedColor.UNKNOWN;
+        return IntakeLayers.DetectedColor.UNKNOWN;
     }
 }
